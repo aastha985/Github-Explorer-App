@@ -11,8 +11,14 @@ class Search extends React.Component {
     };
 
     render(){
+        const { fetchData } = this.props;
         const{ username } = this.state;
-        return <input type="text" value={username} name="username" placeholder="Enter Username" onChange={this.handleUsernameChange}></input>;
+        return(
+            <div>
+                <input type="text" value={username} name="username" placeholder="Enter Username" onChange={this.handleUsernameChange}></input>
+                <button onClick={() => fetchData(username)} className="btn btn-success">Search</button>
+            </div>
+        );
     }
 }
 
