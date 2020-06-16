@@ -1,7 +1,7 @@
 import React from 'react';
 
 const UserCard = ({user}) => {
-    console.log({user});
+    // console.log({user});
     return (<div className="card">
         <div className="card-body">
             <img src={user.avatar_url} alt="" />

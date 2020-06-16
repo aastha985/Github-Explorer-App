@@ -3,6 +3,7 @@ import logo from './logo.svg';
 import './App.css';
 import Search from "./components/Search";
 import UserCard from "./components/UserCard";
+import RepoCard from "./components/RepoCard";
 
 class App extends React.Component{
   state = {
@@ -75,13 +76,14 @@ class App extends React.Component{
 
   render(){
     // console.log(this.state);
-    const {userDataError,reposError,loading,user} = this.state;
+    const {userDataError,reposError,loading,user,repos} = this.state;
     return <div>
         <Search fetchData={this.fetchData}/>
         {(loading && (<p>Loading...</p>))}
         {userDataError && <p className="text-danger">{userDataError}</p>}
         {!loading && !userDataError && user && <UserCard user={user}/>}
         {reposError && <p className="text-danger">{reposError}</p>}
+        {!loading && !reposError && repos.map((repo,index) => <RepoCard key={repo.id} repo={repo}/>) }
     </div>
   }
 }
