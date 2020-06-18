@@ -4,6 +4,7 @@ import './App.css';
 import Search from "./components/Search";
 import UserCard from "./components/UserCard";
 import RepoCard from "./components/RepoCard";
+import TestComponent from "./components/TestComponent";
 
 const pageSize = 10;
 
@@ -109,6 +110,10 @@ class App extends React.Component{
         {userDataError && <p className="text-danger">{userDataError}</p>}
         {!loading && !userDataError && user && <UserCard user={user}/>}
         {reposError && <p className="text-danger">{reposError}</p>}
+
+        {pageSize==='30' && 
+          <TestComponent pageSize={pageSize} />
+        }
 
         {renderRepos && (
           <React.Fragment>
