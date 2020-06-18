@@ -15,6 +15,7 @@ class App extends React.Component{
     // reposError: null,
     error: null,
     loading: false,
+    pageSize:'10',
     page:1,
   };
 
@@ -30,12 +31,12 @@ class App extends React.Component{
     return {error};
   }
 
-  fetchRepos = async (username) => {
-    const { page } = this.state; 
+  fetchRepos = async (username,page) => {
+    // const { page } = this.state; 
     const res = await fetch(`https://api.github.com/users/${username}/repos?page=${page}&per_page=${pageSize}`);
     if(res.ok){
       const data = await res.json();
-      return {data, page: page+1 };
+      return {data};
     }
     const error = (await res.json()).message;
     return {error};
@@ -48,7 +49,7 @@ class App extends React.Component{
       try{
         const [ user,repos] = await Promise.all([
           this.fetchUserData(username),
-          this.fetchRepos(username),
+          this.fetchRepos(username,1),
         ]);
 
         if(user.data!== undefined && repos.data!== undefined){
@@ -56,7 +57,6 @@ class App extends React.Component{
             user:user.data,
             repos:repos.data,
             loading: false,
-            page: repos.page,
           });
         }
 
@@ -77,20 +77,27 @@ class App extends React.Component{
     });
   };
 
-  loadMore = async () => {
-    const {data,page} = await this.fetchRepos(this.state.user.login);
+  loadPage = async page => {
+    const {data} = await this.fetchRepos(this.state.user.login,page);
 
     if(data) 
     this.setState(state => ({
-      repos: [...state.repos,...data],
+      repos:data,
       page,
-    }));
+    }),() => this.loadPage());
 
   };
+
+  handlePageSizeChange = (e) => this.setState({
+    pageSize: e.target.value,
+
+  });
 
   render(){
     // console.log(this.state);
     const {userDataError,reposError,loading,user,repos,page} = this.state;
+
+    const renderRepos = !loading && !reposError && user && !!repos.length;
 
     return <div>
         <Search fetchData={this.fetchData}/>
@@ -99,14 +106,27 @@ class App extends React.Component{
         {!loading && !userDataError && user && <UserCard user={user}/>}
         {reposError && <p className="text-danger">{reposError}</p>}
 
-        {/* {[...new Array(Math.ceil(user.public_repos/pageSize))].map((_,index) =>
-            <button key={index} >{index+1}</button>
-        )} */}
+        {renderRepos && (
+          <React.Fragment>
+              {[...new Array(Math.ceil(user.public_repos/pageSize))].map((_,index) =>
+                  <button key={index} className="btn btn-success mr-2" onClick={() => this.loadPage(index+1)}>{index+1}</button>
+              )}
 
-        {!loading && !reposError && repos.map((repo,index) => <RepoCard key={repo.id} repo={repo}/>) }
+              <div className="d-inline-block mb-4">
+                  value = {pageSize}
+                  <select className="form-control" onChange={this.handlePageSizeChange}>
+                      <option value="10">10</option>
+                      <option value="20">20</option>
+                      <option value="30">30</option>
+                  </select>
+              </div>
 
-        {(!loading && !userDataError && user && ((page-1) * pageSize) < user.public_repos) && (
-          <button className="btn btn-success" onClick={this.loadMore}>Load More</button>
+              {repos.map((repo,index) => <RepoCard key={repo.id} repo={repo}/>) }
+
+              {/* {(((page-1) * pageSize) < user.public_repos) && (
+                <button className="btn btn-success" onClick={this.loadMore}>Load More</button>
+              )} */}
+          </React.Fragment>
         )}
 
     </div>
