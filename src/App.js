@@ -31,8 +31,8 @@ class App extends React.Component{
     return {error};
   }
 
-  fetchRepos = async (username,page) => {
-    // const { page } = this.state; 
+  fetchRepos = async (username) => {
+    const {pageSize, page } = this.state; 
     const res = await fetch(`https://api.github.com/users/${username}/repos?page=${page}&per_page=${pageSize}`);
     if(res.ok){
       const data = await res.json();
@@ -49,7 +49,7 @@ class App extends React.Component{
       try{
         const [ user,repos] = await Promise.all([
           this.fetchUserData(username),
-          this.fetchRepos(username,1),
+          this.fetchRepos(username),
         ]);
 
         if(user.data!== undefined && repos.data!== undefined){
@@ -77,25 +77,29 @@ class App extends React.Component{
     });
   };
 
-  loadPage = async page => {
-    const {data} = await this.fetchRepos(this.state.user.login,page);
+  loadPage = async () => {
+    const {data,page} = await this.fetchRepos(this.state.user.login,this.state.page);
 
     if(data) 
     this.setState(state => ({
       repos:data,
       page,
-    }),() => this.loadPage());
+    }));
 
   };
 
-  handlePageSizeChange = (e) => this.setState({
-    pageSize: e.target.value,
 
-  });
+  handlePageChange = (page) => {
+    this.setState({ page },()=>this.loadPage());
+  };
+
+  handlePageSizeChange = e => this.setState({
+    pageSize: e.target.value,
+  },()=>this.loadPage());
 
   render(){
     // console.log(this.state);
-    const {userDataError,reposError,loading,user,repos,page} = this.state;
+    const {userDataError,reposError,loading,user,repos,pageSize,page} = this.state;
 
     const renderRepos = !loading && !reposError && user && !!repos.length;
 
@@ -109,12 +113,11 @@ class App extends React.Component{
         {renderRepos && (
           <React.Fragment>
               {[...new Array(Math.ceil(user.public_repos/pageSize))].map((_,index) =>
-                  <button key={index} className="btn btn-success mr-2" onClick={() => this.loadPage(index+1)}>{index+1}</button>
+                  <button key={index} className="btn btn-success mr-2" onClick={() => this.handlePageChange(index+1)}>{index+1}</button>
               )}
 
               <div className="d-inline-block mb-4">
-                  value = {pageSize}
-                  <select className="form-control" onChange={this.handlePageSizeChange}>
+                  <select className="form-control" onChange={this.handlePageSizeChange} value = {pageSize}>
                       <option value="10">10</option>
                       <option value="20">20</option>
                       <option value="30">30</option>
