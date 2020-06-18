@@ -4,7 +4,9 @@ import './App.css';
 import Search from "./components/Search";
 import UserCard from "./components/UserCard";
 import RepoCard from "./components/RepoCard";
-import TestComponent from "./components/TestComponent";
+// import TestComponent from "./components/TestComponent";
+import { withRouter } from 'react-router-dom';
+
 
 const pageSize = 10;
 
@@ -23,6 +25,8 @@ class App extends React.Component{
 
   componentDidMount() {
     window.addEventListener('scroll',this.handleScroll);
+    const {match} = this.props;
+    if(match.params.username) this.fetchData(match.params.username);
   }
 
   componentWillUnmount() {
@@ -124,19 +128,22 @@ class App extends React.Component{
   render(){
     // console.log(this.state);
     const {userDataError,reposError,loading,user,repos,page} = this.state;
+    const {match} = this.props;
 
     const renderRepos = !loading && !reposError && user && !!repos.length;
 
-    return <div>
-        <Search fetchData={this.fetchData}/>
+    return( 
+    
+      <div>
+        <Search username={match.params.username}/>
         {(loading && (<p>Loading...</p>))}
         {userDataError && <p className="text-danger">{userDataError}</p>}
         {!loading && !userDataError && user && <UserCard user={user}/>}
         {reposError && <p className="text-danger">{reposError}</p>}
 
-        {pageSize==='30' && 
+        {/* {pageSize==='30' && 
           <TestComponent pageSize={pageSize} />
-        }
+        } */}
 
         {renderRepos && (
           <React.Fragment>
@@ -161,7 +168,7 @@ class App extends React.Component{
         )}
 
     </div>
-  }
+    )}
 }
 
-export default App;
+export default withRouter(App);

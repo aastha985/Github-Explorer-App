@@ -1,9 +1,14 @@
 import React from 'react';
+import { withRouter } from 'react-router-dom';
 
 class Search extends React.Component {
-    state={
-        username: "",
+    constructor(props){
+        super(props);
+        this.state={
+            username:props.username|| "",
+        }
     }
+    
 
     handleUsernameChange = e => {
         const value = e.target.value;
@@ -11,15 +16,15 @@ class Search extends React.Component {
     };
 
     render(){
-        const { fetchData } = this.props;
+        const { history } = this.props;
         const{ username } = this.state;
         return(
             <div>
                 <input type="text" value={username} name="username" placeholder="Enter Username" onChange={this.handleUsernameChange}></input>
-                <button onClick={() => fetchData(username)} className="btn btn-success">Search</button>
+                <button onClick={() => history.push(`/${username}`)} className="btn btn-success">Search</button>
             </div>
         );
     }
 }
 
-export default Search;
+export default withRouter(Search);
