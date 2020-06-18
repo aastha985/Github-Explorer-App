@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default class TestComponent extends React.Component{
+export default class TestComponent extends React.PureComponent{
     constructor(props){
         super(props);
 
@@ -14,10 +14,10 @@ export default class TestComponent extends React.Component{
     componentDidMount(){
         console.log("I am in componentDidMount");
     }
-    shouldComponentUpdate(){
-        console.log("I am in shouldComponentUpdate");
-        return true;
-    }
+    // shouldComponentUpdate(){
+    //     console.log("I am in shouldComponentUpdate");
+    //     return true;
+    // }
     static getSnapshotBeforeUpdate(prevProps,prevState){
         console.log("I am in getSnapshotBeforeUpdate");
     }
