@@ -16,9 +16,28 @@ class App extends React.Component{
     // reposError: null,
     error: null,
     loading: false,
-    pageSize:'10',
+    pageSize:10,
     page:1,
+    fetchingRepos: false,
   };
+
+  componentDidMount() {
+    window.addEventListener('scroll',this.handleScroll);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('scroll',this.handleScroll);
+  }
+
+  handleScroll = () => {
+    const currentScroll = Math.round(window.scrollY);
+    const maxScroll = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+    // const maxScroll = document.body.scrollHeight;
+    // console.log(currentScroll,maxScroll);
+    const {page,pageSize,user} = this.state;
+
+    if(maxScroll-currentScroll <= 100 && user && ((page-1) * pageSize) < user.public_repos) this.loadPage();
+  }
 
   fetchUserData = async(username) => {
     // const proxyurl = "https://cors-anywhere.herokuapp.com/";
@@ -58,6 +77,7 @@ class App extends React.Component{
             user:user.data,
             repos:repos.data,
             loading: false,
+            page: this.state.page+1,
           });
         }
 
@@ -79,28 +99,31 @@ class App extends React.Component{
   };
 
   loadPage = async () => {
-    const {data,page} = await this.fetchRepos(this.state.user.login,this.state.page);
+    if(this.state.fetchingRepos === true) return;
+    this.setState({fetchingRepos: true}, async ()=> {
+      const {data,page} = await this.fetchRepos(this.state.user.login,this.state.page);
 
-    if(data) 
-    this.setState(state => ({
-      repos:data,
-      page,
-    }));
-
+      if(data) 
+      this.setState(state => ({
+        repos:[...state.repos,...data],
+        page: state.page+1,
+        fetchingRepos: false,
+      }));
+    });
   };
 
 
-  handlePageChange = (page) => {
-    this.setState({ page },()=>this.loadPage());
-  };
+  // handlePageChange = (page) => {
+  //   this.setState({ page },()=>this.loadPage());
+  // };
 
-  handlePageSizeChange = e => this.setState({
-    pageSize: e.target.value,
-  },()=>this.loadPage());
+  // handlePageSizeChange = e => this.setState({
+  //   pageSize: e.target.value,
+  // },()=>this.loadPage());
 
   render(){
     // console.log(this.state);
-    const {userDataError,reposError,loading,user,repos,pageSize,page} = this.state;
+    const {userDataError,reposError,loading,user,repos,page} = this.state;
 
     const renderRepos = !loading && !reposError && user && !!repos.length;
 
@@ -117,7 +140,7 @@ class App extends React.Component{
 
         {renderRepos && (
           <React.Fragment>
-              {[...new Array(Math.ceil(user.public_repos/pageSize))].map((_,index) =>
+              {/* {[...new Array(Math.ceil(user.public_repos/pageSize))].map((_,index) =>
                   <button key={index} className="btn btn-success mr-2" onClick={() => this.handlePageChange(index+1)}>{index+1}</button>
               )}
 
@@ -127,7 +150,7 @@ class App extends React.Component{
                       <option value="20">20</option>
                       <option value="30">30</option>
                   </select>
-              </div>
+              </div> */}
 
               {repos.map((repo,index) => <RepoCard key={repo.id} repo={repo}/>) }
 
